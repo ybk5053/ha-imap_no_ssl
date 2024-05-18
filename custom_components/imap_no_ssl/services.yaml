@@ -10,6 +10,23 @@ seen:
       example: "12"
       selector:
         text:
+    tag:
+      required: true
+      example: "tag"
+      selector:
+        text:
+seen:
+  fields:
+    entry:
+      required: true
+      selector:
+        config_entry:
+          integration: "imap_no_ssl"
+    uid:
+      required: true
+      example: "12"
+      selector:
+        text:
 move:
   fields:
     entry:
