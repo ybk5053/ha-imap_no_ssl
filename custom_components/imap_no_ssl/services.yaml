@@ -15,6 +15,9 @@ tag:
       example: "tag"
       selector:
         text:
+    untag:
+      selector:
+        boolean:
 seen:
   fields:
     entry:
