@@ -100,6 +100,24 @@
     }
   },
   "services": {
+    "tag": {
+      "name": "Tag message",
+      "description": "Tag the email message from the server.",
+      "fields": {
+        "entry": {
+          "name": "Entry",
+          "description": "The IMAP config entry."
+        },
+        "uid": {
+          "name": "UID",
+          "description": "The email identifier (UID)."
+        },
+        "tag": {
+          "name": "Tag"
+          "description": "Tag to attach to email."
+        }
+      }
+    },
     "fetch": {
       "name": "Fetch message",
       "description": "Fetch the email message from the server.",
