@@ -1,0 +1,12 @@
+{
+  "domain": "imap_no_ssl",
+  "name": "IMAP no SSL",
+  "codeowners": ["@jbouwh"],
+  "config_flow": true,
+  "dependencies": ["repairs"],
+  "documentation": "https://www.home-assistant.io/integrations/imap",
+  "iot_class": "cloud_push",
+  "loggers": ["aioimaplib"],
+  "requirements": ["aioimaplib==1.0.1"],
+  "version": "0.1.0"
+}
