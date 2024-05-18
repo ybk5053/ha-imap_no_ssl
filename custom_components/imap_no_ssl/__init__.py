@@ -41,6 +41,7 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 CONF_ENTRY = "entry"
 CONF_SEEN = "seen"
 CONF_UID = "uid"
+CONF_TAG = "tag"
 CONF_TARGET_FOLDER = "target_folder"
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,6 +57,11 @@ _SERVICE_UID_SCHEMA = vol.Schema(
 )
 
 SERVICE_SEEN_SCHEMA = _SERVICE_UID_SCHEMA
+SERVICE_TAG_SCHEMA = _SERVICE_UID_SCHEMA.extend(
+    {
+        vol.Required(CONF_TAG): cv.string,
+    }
+)
 SERVICE_MOVE_SCHEMA = _SERVICE_UID_SCHEMA.extend(
     {
         vol.Optional(CONF_SEEN): cv.boolean,
@@ -109,6 +115,29 @@ def raise_on_error(response: Response, translation_key: str) -> None:
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up imap services."""
+
+    async def async_tag(call: ServiceCall) -> None:
+        """Process mark as seen service call."""
+        entry_id: str = call.data[CONF_ENTRY]
+        uid: str = call.data[CONF_UID]
+        _LOGGER.debug(
+            "Mark message %s as seen. Entry: %s",
+            uid,
+            entry_id,
+        )
+        client = await async_get_imap_client(hass, entry_id)
+        try:
+            response = await client.store(uid, "+FLAGS (%s)" % call.data["tag"])
+        except (TimeoutError, AioImapException) as exc:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="imap_server_fail",
+                translation_placeholders={"error": str(exc)},
+            ) from exc
+        raise_on_error(response, "seen_failed")
+        await client.close()
+
+    hass.services.async_register(DOMAIN, "tag", async_tag, SERVICE_TAG_SCHEMA)
 
     async def async_seen(call: ServiceCall) -> None:
         """Process mark as seen service call."""
