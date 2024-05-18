@@ -42,6 +42,7 @@ CONF_ENTRY = "entry"
 CONF_SEEN = "seen"
 CONF_UID = "uid"
 CONF_TAG = "tag"
+CONF_UNTAG = "untag"
 CONF_TARGET_FOLDER = "target_folder"
 
 _LOGGER = logging.getLogger(__name__)
@@ -60,6 +61,7 @@ SERVICE_SEEN_SCHEMA = _SERVICE_UID_SCHEMA
 SERVICE_TAG_SCHEMA = _SERVICE_UID_SCHEMA.extend(
     {
         vol.Required(CONF_TAG): cv.string,
+        vol.Optional(CONF_UNTAG): cv.boolean,
     }
 )
 SERVICE_MOVE_SCHEMA = _SERVICE_UID_SCHEMA.extend(
@@ -120,6 +122,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         """Process mark as seen service call."""
         entry_id: str = call.data[CONF_ENTRY]
         uid: str = call.data[CONF_UID]
+        untag = "+"
+        if bool(call.data[CONF_UNTAG]):
+            untag = "-"
         _LOGGER.debug(
             "Mark message %s as seen. Entry: %s",
             uid,
@@ -127,7 +132,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         )
         client = await async_get_imap_client(hass, entry_id)
         try:
-            response = await client.store(uid, "+FLAGS (%s)" % call.data["tag"])
+            response = await client.store(uid, "%sFLAGS (%s)" % untag,c all.data[CONF_TAG])
         except (TimeoutError, AioImapException) as exc:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
