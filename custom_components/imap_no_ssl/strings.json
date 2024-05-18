@@ -115,6 +115,10 @@
         "tag": {
           "name": "Tag",
           "description": "Tag to attach to email."
+        },
+        "untag": {
+          "name": "Untag",
+          "description": "Remove tag instead."
         }
       }
     },
