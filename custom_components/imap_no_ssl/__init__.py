@@ -132,7 +132,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         )
         client = await async_get_imap_client(hass, entry_id)
         try:
-            response = await client.store(uid, "%sFLAGS (%s)" % untag,c all.data[CONF_TAG])
+            response = await client.store(uid, "%sFLAGS (%s)" % (untag, call.data[CONF_TAG]))
         except (TimeoutError, AioImapException) as exc:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
