@@ -139,7 +139,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 translation_key="imap_server_fail",
                 translation_placeholders={"error": str(exc)},
             ) from exc
-        raise_on_error(response, "seen_failed")
+        raise_on_error(response, "tag_failed")
         await client.close()
 
     hass.services.async_register(DOMAIN, "tag", async_tag, SERVICE_TAG_SCHEMA)
