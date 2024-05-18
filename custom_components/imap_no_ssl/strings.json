@@ -60,6 +60,9 @@
     },
     "seen_failed": {
       "message": "Marking message as seen failed with \"{error}\"."
+    },
+    "tag_failed": {
+      "message": "Tagging message failed with \"{error}\"."
     }
   },
   "options": {
