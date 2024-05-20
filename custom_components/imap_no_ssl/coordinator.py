@@ -206,6 +206,22 @@ class ImapMessage:
 
         return str(self.email_message.get_payload())
 
+    @property
+    def attachment(self) -> list[dict]:
+        """Get attachments from the email.
+    
+        Will look for parts with filename.
+        """
+        attachments = []
+    
+        part: Message
+        for part in self.email_message.walk():
+            if part.get_filename() is not None:
+                attachment = {part.get_filename(): part.get_payload(decode=True)}
+                attachments.append(attachment)
+    
+        return attachments
+
 
 class ImapDataUpdateCoordinator(DataUpdateCoordinator[int | None]):
     """Base class for imap client."""
