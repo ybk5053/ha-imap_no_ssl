@@ -76,3 +76,11 @@ fetch:
       example: "12"
       selector:
         text:
+    attachment:
+      required: true
+      selector:
+        boolean:
+    attachment_filter:
+      required: false
+      selector:
+        text:

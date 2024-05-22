@@ -136,6 +136,14 @@
         "uid": {
           "name": "UID",
           "description": "The email identifier (UID)."
+        },
+        "attachment": {
+          "name": "Attachment",
+          "description": "Fetch the attachment with the email."
+        },
+        "attachment_filter": {
+          "name": "Attachment filter",
+          "description": "Filter the attachment by filename."
         }
       }
     },

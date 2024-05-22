@@ -44,6 +44,8 @@ CONF_UID = "uid"
 CONF_TAG = "tag"
 CONF_UNTAG = "untag"
 CONF_TARGET_FOLDER = "target_folder"
+CONF_ATTACHMENT = "attachment"
+CONF_ATTACHMENT_FILTER = "attachment_filter"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -251,11 +253,27 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         raise_on_error(response, "fetch_failed")
         message = ImapMessage(response.lines[1])
         await client.close()
+        if call.data[CONF_ATTACHMENT]:
+            if call.data[CONF_ATTACHMENT_FILTER]:
+                attachments = []
+                for attachment in message.attachments:
+                    if call.data[CONF_ATTACHMENT_FILTER] in attachment["filename"]:
+                        attachments.append(attachment)
+            else:
+                attachments = message.attachments
+            return {
+                "text": message.text,
+                "sender": message.sender,
+                "subject": message.subject,
+                "uid": uid,
+                "attachments": attachments,
+            }
         return {
             "text": message.text,
             "sender": message.sender,
             "subject": message.subject,
             "uid": uid,
+            "attachments": [],
         }
 
     hass.services.async_register(
