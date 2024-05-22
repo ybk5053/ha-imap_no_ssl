@@ -9,7 +9,7 @@ import email
 from email.header import decode_header, make_header
 from email.message import Message
 from email.utils import parseaddr, parsedate_to_datetime
-import logging
+import logging, base64
 from typing import TYPE_CHECKING, Any
 
 from aioimaplib import AUTH, IMAP4_SSL, IMAP4, NONAUTH, SELECTED, AioImapException
@@ -221,7 +221,7 @@ class ImapMessage:
         part: Message
         for part in self.email_message.walk():
             if part.get_filename() is not None:
-                attachment = {"filename": part.get_filename(), "payload": part.get_payload(decode=True)}
+                attachment = {"filename": part.get_filename(), "payload": base64.b64encode(part.get_payload(decode=True)).decode("utf-8")}
                 attachments.append(attachment)
     
         return attachments
