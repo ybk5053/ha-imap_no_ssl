@@ -73,7 +73,12 @@ SERVICE_MOVE_SCHEMA = _SERVICE_UID_SCHEMA.extend(
     }
 )
 SERVICE_DELETE_SCHEMA = _SERVICE_UID_SCHEMA
-SERVICE_FETCH_TEXT_SCHEMA = _SERVICE_UID_SCHEMA
+SERVICE_FETCH_TEXT_SCHEMA = _SERVICE_UID_SCHEMA.extend(
+    {
+        vol.Required(CONF_ATTACHMENT): cv.boolean,
+        vol.Optional(CONF_ATTACHMENT_FILTER): cv.string,
+    }
+)
 
 
 async def async_get_imap_client(hass: HomeAssistant, entry_id: str) -> IMAP4:
