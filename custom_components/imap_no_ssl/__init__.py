@@ -265,7 +265,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         message = ImapMessage(response.lines[1])
         await client.close()
         if call.data[CONF_ATTACHMENT]:
-            if call.data[CONF_ATTACHMENT_FILTER]:
+            if call.data.get(CONF_ATTACHMENT_FILTER, ""):
                 attachments = []
                 for attachment in message.attachments:
                     if call.data[CONF_ATTACHMENT_FILTER] in attachment["filename"]:

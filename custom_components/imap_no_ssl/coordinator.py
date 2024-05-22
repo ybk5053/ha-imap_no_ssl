@@ -211,7 +211,7 @@ class ImapMessage:
         return str(self.email_message.get_payload())
 
     @property
-    def attachment(self) -> list[dict]:
+    def attachments(self) -> list[dict]:
         """Get attachments from the email.
     
         Will look for parts with filename.
