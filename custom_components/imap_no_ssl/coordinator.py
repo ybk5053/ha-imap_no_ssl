@@ -217,7 +217,7 @@ class ImapMessage:
         part: Message
         for part in self.email_message.walk():
             if part.get_filename() is not None:
-                attachment = {part.get_filename(): part.get_payload(decode=True)}
+                attachment = {"filename": part.get_filename(), "payload": part.get_payload(decode=True)}
                 attachments.append(attachment)
     
         return attachments
