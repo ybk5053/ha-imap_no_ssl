@@ -39,6 +39,7 @@ from .const import (
     CONF_SEARCH,
     CONF_SERVER,
     CONF_SSL_CIPHER_LIST,
+    CONF_USE_SSL,
     DEFAULT_MAX_MESSAGE_SIZE,
     DEFAULT_PORT,
     DOMAIN,
@@ -74,10 +75,18 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Optional(CONF_CHARSET, default="utf-8"): str,
         vol.Optional(CONF_FOLDER, default="INBOXX"): str,
         vol.Optional(CONF_SEARCH, default="UnSeen UnDeleted"): str,
+        vol.Optional(CONF_USE_SSL, default=True): BOOLEAN_SELECTOR,
         # The default for new entries is to not include text and headers
         vol.Optional(CONF_EVENT_MESSAGE_DATA, default=[]): EVENT_MESSAGE_DATA_SELECTOR,
     }
 )
+
+CONFIG_SCHEMA_ADVANCED = {
+    vol.Optional(
+        CONF_SSL_CIPHER_LIST, default=SSLCipherList.PYTHON_DEFAULT
+    ): CIPHER_SELECTOR,
+    vol.Optional(CONF_VERIFY_SSL, default=True): BOOLEAN_SELECTOR,
+}
 
 OPTIONS_SCHEMA = vol.Schema(
     {
@@ -137,8 +146,25 @@ async def validate_input(
 class IMAPConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for imap."""
 
-    VERSION = 1
+    VERSION = 2
     _reauth_entry: ConfigEntry | None
+
+    async def async_migrate_entry(hass, config_entry: ConfigEntry):
+        """Migrate old entry."""
+        if config_entry.version > 2:
+            # This means the user has downgraded from a future version
+            return False
+        
+        if config_entry.version < 2:
+
+            new = {**config_entry.data}
+            new[CONF_USE_SSL] = False
+            new[CONF_SSL_CIPHER_LIST] = SSLCipherList.PYTHON_DEFAULT
+            new[CONF_VERIFY_SSL] = True
+
+            hass.config_entries.async_update_entry(config_entry, data=new, minor_version=3, version=1)
+
+        return True
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

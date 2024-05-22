@@ -6,7 +6,7 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
-from aioimaplib import IMAP4, AioImapException, Response
+from aioimaplib import IMAP4_SSL, IMAP4, AioImapException, Response
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry

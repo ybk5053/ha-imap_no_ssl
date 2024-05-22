@@ -9,7 +9,10 @@
           "port": "Port",
           "charset": "Character set",
           "folder": "Folder",
-          "search": "IMAP search"
+          "search": "IMAP search",
+          "ssl_cipher_list": "SSL cipher list (Advanced)",
+          "verify_ssl": "Verify SSL certificate",
+          "use_ssl": "Use SSL"
         }
       },
       "reauth_confirm": {

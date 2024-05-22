@@ -12,7 +12,7 @@ from email.utils import parseaddr, parsedate_to_datetime
 import logging
 from typing import TYPE_CHECKING, Any
 
-from aioimaplib import AUTH, IMAP4, NONAUTH, SELECTED, AioImapException
+from aioimaplib import AUTH, IMAP4_SSL, IMAP4, NONAUTH, SELECTED, AioImapException
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -47,6 +47,7 @@ from .const import (
     CONF_SEARCH,
     CONF_SERVER,
     CONF_SSL_CIPHER_LIST,
+    CONF_USE_SSL,
     DEFAULT_MAX_MESSAGE_SIZE,
     DOMAIN,
     MESSAGE_DATA_OPTIONS,
@@ -66,12 +67,15 @@ DIAGNOSTICS_ATTRIBUTES = ["date", "initial"]
 
 async def connect_to_server(data: Mapping[str, Any]) -> IMAP4:
     """Connect to imap server and return client."""
-    ssl_cipher_list: str = data.get(CONF_SSL_CIPHER_LIST, SSLCipherList.PYTHON_DEFAULT)
-    if data.get(CONF_VERIFY_SSL, True):
-        ssl_context = client_context(ssl_cipher_list=SSLCipherList(ssl_cipher_list))
+    if data.get(CONF_USE_SSL):
+        ssl_cipher_list: str = data.get(CONF_SSL_CIPHER_LIST, SSLCipherList.PYTHON_DEFAULT)
+        if data.get(CONF_VERIFY_SSL, True):
+            ssl_context = client_context(ssl_cipher_list=SSLCipherList(ssl_cipher_list))
+        else:
+            ssl_context = create_no_verify_ssl_context()
+        client = IMAP4_SSL(data[CONF_SERVER], data[CONF_PORT], ssl_context=ssl_context)
     else:
-        ssl_context = create_no_verify_ssl_context()
-    client = IMAP4(data[CONF_SERVER], data[CONF_PORT])
+        client = IMAP4(data[CONF_SERVER], data[CONF_PORT])
     _LOGGER.debug(
         "Wait for hello message from server %s on port %s, verify_ssl: %s",
         data[CONF_SERVER],

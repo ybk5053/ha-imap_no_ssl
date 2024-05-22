@@ -1,6 +1,8 @@
 # IMAP for Home Assistant without SSL
 
-Removed need for SSL from official imap integration
+Extension of official IMAP integration:
+1. Add option not use SSL.
+2. Add option to fetch attachments.
 
 ## Installation
 
