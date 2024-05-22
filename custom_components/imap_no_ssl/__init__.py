@@ -10,7 +10,7 @@ from aioimaplib import IMAP4_SSL, IMAP4, AioImapException, Response
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform, CONF_VERIFY_SSL
 from homeassistant.core import (
     HomeAssistant,
     ServiceCall,
@@ -26,6 +26,7 @@ from homeassistant.exceptions import (
 )
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.util.ssl import SSLCipherList
 
 from .const import CONF_ENABLE_PUSH, DOMAIN
 from .coordinator import (
@@ -35,6 +36,11 @@ from .coordinator import (
     connect_to_server,
 )
 from .errors import InvalidAuth, InvalidFolder
+from .const import (
+    CONF_SSL_CIPHER_LIST,
+    CONF_USE_SSL,
+    DOMAIN
+)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -336,3 +342,20 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ) = hass.data[DOMAIN].pop(entry.entry_id)
         await coordinator.shutdown()
     return unload_ok
+
+async def async_migrate_entry(hass, config_entry: ConfigEntry):
+        """Migrate old entry."""
+        if config_entry.version > 1:
+            # This means the user has downgraded from a future version
+            return False
+        
+        if config_entry.version == 1:
+            new = {**config_entry.data}
+            if config_entry.minor_version < 2:
+                new[CONF_USE_SSL] = False
+                new[CONF_SSL_CIPHER_LIST] = SSLCipherList.PYTHON_DEFAULT
+                new[CONF_VERIFY_SSL] = True
+
+            hass.config_entries.async_update_entry(config_entry, data=new, minor_version=3, version=1)
+
+        return True

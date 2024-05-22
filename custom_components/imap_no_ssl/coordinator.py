@@ -67,7 +67,7 @@ DIAGNOSTICS_ATTRIBUTES = ["date", "initial"]
 
 async def connect_to_server(data: Mapping[str, Any]) -> IMAP4:
     """Connect to imap server and return client."""
-    if data.get(CONF_USE_SSL):
+    if data.get(CONF_USE_SSL, False):
         ssl_cipher_list: str = data.get(CONF_SSL_CIPHER_LIST, SSLCipherList.PYTHON_DEFAULT)
         if data.get(CONF_VERIFY_SSL, True):
             ssl_context = client_context(ssl_cipher_list=SSLCipherList(ssl_cipher_list))

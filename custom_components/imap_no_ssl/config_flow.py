@@ -146,25 +146,9 @@ async def validate_input(
 class IMAPConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for imap."""
 
-    VERSION = 2
+    VERSION = 1
+    MINOR_VERSION = 2
     _reauth_entry: ConfigEntry | None
-
-    async def async_migrate_entry(hass, config_entry: ConfigEntry):
-        """Migrate old entry."""
-        if config_entry.version > 2:
-            # This means the user has downgraded from a future version
-            return False
-        
-        if config_entry.version < 2:
-
-            new = {**config_entry.data}
-            new[CONF_USE_SSL] = False
-            new[CONF_SSL_CIPHER_LIST] = SSLCipherList.PYTHON_DEFAULT
-            new[CONF_VERIFY_SSL] = True
-
-            hass.config_entries.async_update_entry(config_entry, data=new, minor_version=3, version=1)
-
-        return True
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
