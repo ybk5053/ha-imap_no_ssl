@@ -251,7 +251,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         entry_id: str = call.data[CONF_ENTRY]
         uid: str = call.data[CONF_UID]
         timeout: int = 10
-        if call.data[CONF_TIMEOUT]:
+        if call.data.get(CONF_TIMEOUT, ""):
             timeout = int(call.data[CONF_TIMEOUT])
         _LOGGER.debug(
             "Fetch text for message %s. Entry: %s",
@@ -270,9 +270,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         raise_on_error(response, "fetch_failed")
 
         txtpart = ""
-        parts = ImapParts.get_parts(response.lines[1].decode("utf-8"))
+        parts = ImapParts.get_parts(response.lines[0].decode("utf-8"))
         for p in parts.print_tree():
-            if "TEXT" in p:
+            if "text" in p:
                 txtpart = p.split(" ")[0]
 
         try:
