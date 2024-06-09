@@ -65,7 +65,7 @@ MAX_EVENT_DATA_BYTES = 32168
 DIAGNOSTICS_ATTRIBUTES = ["date", "initial"]
 
 
-async def connect_to_server(data: Mapping[str, Any]) -> IMAP4:
+async def connect_to_server(data: Mapping[str, Any], timeout=10) -> IMAP4:
     """Connect to imap server and return client."""
     if data.get(CONF_USE_SSL, False):
         ssl_cipher_list: str = data.get(CONF_SSL_CIPHER_LIST, SSLCipherList.PYTHON_DEFAULT)
@@ -73,9 +73,9 @@ async def connect_to_server(data: Mapping[str, Any]) -> IMAP4:
             ssl_context = client_context(ssl_cipher_list=SSLCipherList(ssl_cipher_list))
         else:
             ssl_context = create_no_verify_ssl_context()
-        client = IMAP4_SSL(data[CONF_SERVER], data[CONF_PORT], ssl_context=ssl_context)
+        client = IMAP4_SSL(data[CONF_SERVER], data[CONF_PORT], ssl_context=ssl_context, timeout=timeout)
     else:
-        client = IMAP4(data[CONF_SERVER], data[CONF_PORT])
+        client = IMAP4(data[CONF_SERVER], data[CONF_PORT], timeout=timeout)
     _LOGGER.debug(
         "Wait for hello message from server %s on port %s, verify_ssl: %s",
         data[CONF_SERVER],

@@ -47,6 +47,7 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 CONF_ENTRY = "entry"
 CONF_SEEN = "seen"
 CONF_UID = "uid"
+CONF_TIMEOUT = "timeout"
 CONF_TAG = "tag"
 CONF_UNTAG = "untag"
 CONF_TARGET_FOLDER = "target_folder"
@@ -83,11 +84,12 @@ SERVICE_FETCH_TEXT_SCHEMA = _SERVICE_UID_SCHEMA.extend(
     {
         vol.Required(CONF_ATTACHMENT): cv.boolean,
         vol.Optional(CONF_ATTACHMENT_FILTER): cv.string,
+        vol.Optional(CONF_TIMEOUT): cv.string,
     }
 )
 
 
-async def async_get_imap_client(hass: HomeAssistant, entry_id: str) -> IMAP4:
+async def async_get_imap_client(hass: HomeAssistant, entry_id: str, timeout=10) -> IMAP4:
     """Get IMAP client and connect."""
     if hass.data[DOMAIN].get(entry_id) is None:
         raise ServiceValidationError(
@@ -98,7 +100,7 @@ async def async_get_imap_client(hass: HomeAssistant, entry_id: str) -> IMAP4:
     if TYPE_CHECKING:
         assert entry is not None
     try:
-        client = await connect_to_server(entry.data)
+        client = await connect_to_server(entry.data, timeout=timeout)
     except InvalidAuth as exc:
         raise ServiceValidationError(
             translation_domain=DOMAIN, translation_key="invalid_auth"
@@ -247,12 +249,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         """Process fetch email service and return content."""
         entry_id: str = call.data[CONF_ENTRY]
         uid: str = call.data[CONF_UID]
+        timeout: int = 10
+        if call.data[CONF_TIMEOUT]:
+            timeout = int(call.data[CONF_TIMEOUT])
         _LOGGER.debug(
             "Fetch text for message %s. Entry: %s",
             uid,
             entry_id,
         )
-        client = await async_get_imap_client(hass, entry_id)
+        client = await async_get_imap_client(hass, entry_id, timeout=timeout)
         try:
             response = await client.fetch(uid, "BODY.PEEK[]")
         except (TimeoutError, AioImapException) as exc:

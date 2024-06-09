@@ -147,6 +147,10 @@
         "attachment_filter": {
           "name": "Attachment filter",
           "description": "Filter the attachment by filename."
+        },
+        "timeout": {
+          "name": "Timeout",
+          "description": "Seconds before command tiemout."
         }
       }
     },
