@@ -11,6 +11,7 @@ from email.message import Message
 from email.utils import parseaddr, parsedate_to_datetime
 import logging, base64
 from typing import TYPE_CHECKING, Any
+import re
 
 from aioimaplib import AUTH, IMAP4_SSL, IMAP4, NONAUTH, SELECTED, AioImapException
 
