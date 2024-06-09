@@ -85,7 +85,7 @@ fetch:
       selector:
         text:
     timeout:
-      required: true
+      required: false
       example: "10"
       selector:
         text:
