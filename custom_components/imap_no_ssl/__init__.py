@@ -31,6 +31,7 @@ from homeassistant.util.ssl import SSLCipherList
 from .const import CONF_ENABLE_PUSH, DOMAIN
 from .coordinator import (
     ImapMessage,
+    ImapParts,
     ImapPollingDataUpdateCoordinator,
     ImapPushDataUpdateCoordinator,
     connect_to_server,
@@ -259,7 +260,26 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         )
         client = await async_get_imap_client(hass, entry_id, timeout=timeout)
         try:
-            response = await client.fetch(uid, "BODY.PEEK[]")
+            response = await client.fetch(uid, "BODYSTRUCTURE")
+        except (TimeoutError, AioImapException) as exc:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="imap_server_fail",
+                translation_placeholders={"error": str(exc)},
+            ) from exc
+        raise_on_error(response, "fetch_failed")
+
+        txtpart = ""
+        parts = ImapParts.get_parts(response.lines[1].decode("utf-8"))
+        for p in parts.print_tree():
+            if "TEXT" in p:
+                txtpart = p.split(" ")[0]
+
+        try:
+            if call.data[CONF_ATTACHMENT]:
+                response = await client.fetch(uid, "BODY.PEEK[]")
+            else:
+                response = await client.fetch(uid, "BODY.PEEK[{0}]".format(txtpart))
         except (TimeoutError, AioImapException) as exc:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,

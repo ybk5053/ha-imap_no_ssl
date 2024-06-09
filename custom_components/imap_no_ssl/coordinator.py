@@ -103,6 +103,89 @@ async def connect_to_server(data: Mapping[str, Any], timeout=10) -> IMAP4:
         raise InvalidFolder(f"Folder {data[CONF_FOLDER]} is invalid")
     return client
 
+class ImapParts:
+    SUBTYPES = ['MIXED', 'MESSAGE', 'DIGEST', 'ALTERNATIVE', 'RELATED',
+        'REPORT','SIGNED','ENCRYPTED','FORM DATA']
+    BODYSTRUCTURE_RE = re.compile('.*\(BODY\w{0,9} (.*)\)')
+    CONTENT_TYPE_RE = re.compile(r'\s*"(TEXT|APPLICATION|IMAGE|VIDEO|AUDIO)"', re.I)
+    CONTENT_SUBTYPE_RE = re.compile(r'\s*"(?:TEXT|APPLICATION|IMAGE|VIDEO|AUDIO)" "(.+?)"', re.I)
+    MULTIPART_TYPE_RE = re.compile('\s*"({0})"'.format('|'.join(SUBTYPES)), re.I)
+    MULTIPART_SUBTYPE_RE = re.compile('\s*"(?:{0})" "(.+?)"'.format('|'.join(SUBTYPES)), re.I)
+
+    def __init__(self, content_type, depth, content=None):
+        self.content_type = content_type
+        self.depth = depth
+        self.content = content
+        self.parts = []
+
+    def add_child(self, child):
+        self.parts.append(child)
+
+    def get_child(self, index):
+        try:
+            return self.parts[index]
+        except IndexError:
+            return None
+    
+    def print_tree(self, index=''):
+        if self.depth != 0:
+            print("not main")
+            return
+        yield from self._print_tree(index)
+    
+    def _print_tree(self, index=''):
+        i = 0
+        pp = index + " " + self.content_type
+        yield pp.strip()
+        if index:
+            index += '.'
+        for part in self.parts:
+            i += 1
+            yield from part._print_tree(index + str(i))
+
+    def __str__(self):
+        if self.content:
+            return self.content_type + " : " + str(self.parts) + " : " + self.content
+        return self.content_type + " : " + str(self.parts)
+    
+    @staticmethod
+    def get_parts(txt):
+        txt = ImapParts.BODYSTRUCTURE_RE.findall(txt)[0]
+        print(txt)
+        s = []
+        parts = []
+        for i in range(len(txt)):
+            c = txt[i]
+            if c == '(':
+                s.append(i)
+            elif c == ')':
+                d = len(s) - 1
+                multires = ImapParts.MULTIPART_TYPE_RE.findall(txt[s[-1]:i+1])
+                if multires:
+                    try:
+                        t = multires[-1] + "/" + ImapParts.MULTIPART_SUBTYPE_RE.findall(txt[s[-1]:i+1])[-1]
+                    except IndexError:
+                        t = multires[-1]
+                    parts.append(ImapParts(t, d))
+                else:
+                    contentres = ImapParts.CONTENT_TYPE_RE.findall(txt[s[-1]:i+1])
+                    if contentres:
+                        t = contentres[-1] + "/" + ImapParts.CONTENT_SUBTYPE_RE.findall(txt[s[-1]:i+1])[-1]
+                        parts.append(ImapParts(t, d, content=txt[s[-1]:i+1]))
+                s.pop(-1)
+
+        d = 0
+        for i in range(len(parts)):
+            if i == len(parts)-1:
+                continue
+
+            d = parts[i].depth
+            j = i + 1
+            while parts[j].depth >= parts[i].depth:
+                j += 1
+            parts[j].add_child(parts[i])
+
+        return parts[-1]
 
 class ImapMessage:
     """Class to parse an RFC822 email message."""
