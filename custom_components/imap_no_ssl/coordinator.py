@@ -152,7 +152,6 @@ class ImapParts:
     @staticmethod
     def get_parts(txt):
         txt = ImapParts.BODYSTRUCTURE_RE.findall(txt)[0]
-        print(txt)
         s = []
         parts = []
         for i in range(len(txt)):
