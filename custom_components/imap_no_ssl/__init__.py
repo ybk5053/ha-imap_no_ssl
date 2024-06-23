@@ -274,6 +274,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         for p in parts.print_tree():
             if "text" in p:
                 txtpart = p.split(" ")[0]
+                break
 
         try:
             if call.data[CONF_ATTACHMENT]:
