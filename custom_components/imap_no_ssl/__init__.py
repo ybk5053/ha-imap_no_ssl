@@ -280,7 +280,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             if call.data[CONF_ATTACHMENT]:
                 response = await client.fetch(uid, "BODY.PEEK[]")
             else:
-                response = await client.fetch(uid, "BODY.PEEK[{0}]".format(txtpart))
+                response = await client.fetch(uid, "BODY.PEEK[HEADER]")
+                body = await client.fetch(uid, "BODY.PEEK[{0}]".format(txtpart))
         except (TimeoutError, AioImapException) as exc:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
@@ -289,6 +290,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             ) from exc
         raise_on_error(response, "fetch_failed")
         message = ImapMessage(response.lines[1])
+        if not call.data[CONF_ATTACHMENT]:
+            message.set_content(body.lines[1])
         await client.close()
         if call.data[CONF_ATTACHMENT]:
             if call.data.get(CONF_ATTACHMENT_FILTER, ""):
