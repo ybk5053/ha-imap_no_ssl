@@ -271,9 +271,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
         txtpart = ""
         parts = ImapParts.get_parts(response.lines[0].decode("utf-8"))
+        _LOGGER.warn(parts)
         for p in parts.print_tree():
             if "text" in p:
                 txtpart = p.split(" ")[0]
+                _LOGGER.warn(txtpart)
                 break
 
         try:
