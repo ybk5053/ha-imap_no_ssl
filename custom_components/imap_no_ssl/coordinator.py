@@ -194,6 +194,9 @@ class ImapMessage:
         """Initialize IMAP message."""
         self.email_message = email.message_from_bytes(raw_message)
 
+    def set_content(self, content):
+        self.email_message.set_payload(content)
+
     @staticmethod
     def _decode_payload(part: Message) -> str:
         """Try to decode text payloads.
@@ -281,6 +284,8 @@ class ImapMessage:
                 and message_untyped_text is None
             ):
                 message_untyped_text = str(part.get_payload())
+            else:
+                message_untyped_text = str(part.get_payload()).replace("=\r\n", "").replace("=3D", "=").replace("= ", "=")
 
         if message_text is not None:
             return message_text
